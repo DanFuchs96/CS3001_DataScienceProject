@@ -6,7 +6,8 @@ Data Science Competition Project
 """
 
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+import numpy as np
 
 accepts = pd.read_csv("chefmozaccepts.csv")
 cuisine = pd.read_csv("chefmozcuisine.csv")
@@ -112,3 +113,20 @@ T6UserPaymentPlot.set_ylabel('Count', size=12)
 #Dummy Transformation
 Payment_Transformation = pd.get_dummies(payment, columns=['Upayment'])
 Payment_Transformation = Payment_Transformation.groupby('userID', as_index=False).sum()
+
+#User Profile
+#First, we know that some of the values in this table are unknown, so we are replacing
+#'?' with nan
+userprofile = userprofile.replace('?', np.nan)
+#Stats
+print("Number of unique users in userprofile table:", len(userprofile.userID.unique()))
+print()
+#Trying to find how many are missing per column
+Nan_Count = userprofile.isnull().sum()
+missing_DF = pd.DataFrame({'columns': userprofile.columns, 'nullCount': Nan_Count})
+print(missing_DF)
+print(missing_DF.info())
+Missing_Profile_Plot = missing_DF.plot.bar(x='columns', y='nullCount', legend=False)
+Missing_Profile_Plot.set_title('Amount of missing values in UserProfile Table per Attribute')
+Missing_Profile_Plot.set_xlabel('Attributes')
+Missing_Profile_Plot.set_ylabel('Number of ? values')
