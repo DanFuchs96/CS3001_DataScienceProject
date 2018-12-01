@@ -8,6 +8,7 @@ Data Science Competition Project
 import pandas as pd
 #import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 accepts = pd.read_csv("chefmozaccepts.csv")
 cuisine = pd.read_csv("chefmozcuisine.csv")
@@ -125,8 +126,120 @@ print()
 Nan_Count = userprofile.isnull().sum()
 missing_DF = pd.DataFrame({'columns': userprofile.columns, 'nullCount': Nan_Count})
 print(missing_DF)
-print(missing_DF.info())
+print()
+#print(missing_DF.info())
 Missing_Profile_Plot = missing_DF.plot.bar(x='columns', y='nullCount', legend=False)
 Missing_Profile_Plot.set_title('Amount of missing values in UserProfile Table per Attribute')
 Missing_Profile_Plot.set_xlabel('Attributes')
 Missing_Profile_Plot.set_ylabel('Number of ? values')
+#Replacing Nan values with the mode of the column
+for column in userprofile.columns:
+    userprofile[column].fillna(userprofile[column].mode()[0], inplace=True)
+    
+#print(userprofile.smoker.value_counts())
+    
+#Below are pie chart visualizations of some of the user profile data    
+'''pie_smoker = userprofile['smoker'].value_counts().plot(kind='pie', figsize=(5,5))
+pie_smoker.set_title('Smoker Distribution')
+pie_smoker.set_xlabel('')
+pie_smoker.set_ylabel('')
+
+pie_drink_level = userprofile['drink_level'].value_counts().plot(kind='pie', figsize=(5,5))
+pie_drink_level.set_title('Drinking Level Distribution')
+pie_drink_level.set_xlabel('')
+pie_drink_level.set_ylabel('')
+
+pie_dress_preference = userprofile['dress_preference'].value_counts().plot(kind='pie', figsize=(5,5))
+pie_dress_preference.set_title('Dress Preference Distribution')
+pie_dress_preference.set_xlabel('')
+pie_dress_preference.set_ylabel('')
+
+pie_marital_status = userprofile['marital_status'].value_counts().plot(kind='pie', figsize=(5,5))
+pie_marital_status.set_title('Marital Status Distribution')
+pie_marital_status.set_xlabel('')
+pie_marital_status.set_ylabel('')
+
+pie_interest = userprofile['interest'].value_counts().plot(kind='pie', figsize=(5,5))
+pie_interest.set_title('Interest Distribution')
+pie_interest.set_xlabel('')
+pie_interest.set_ylabel('')
+
+pie_budget = userprofile['budget'].value_counts().plot(kind='pie', figsize=(5,5))
+pie_budget.set_title('Budget Distribution')
+pie_budget.set_xlabel('')
+pie_budget.set_ylabel('')'''
+
+#Bar plot to look at personal info by birthyear (interest, personality, religion, activity)
+ProfileBirthBar = userprofile.groupby('birth_year')['interest','personality','religion','activity'].nunique().plot.bar(figsize=(15,5))
+ProfileBirthBar.set_title('Users Personal Info Based on Birthyear')
+ProfileBirthBar.set_xlabel('Birth Year')
+
+#Transforming profile data into integer values
+ProfileInt = userprofile.select_dtypes(include=['object'])
+encoder = LabelEncoder()
+ProfileInt = ProfileInt.apply(encoder.fit_transform, axis=0)
+ProfileInt = ProfileInt.drop(['userID'],axis=1)
+ProfileInt[['userID','latitude','longitude','birth_year','weight','height']]=userprofile[['userID','latitude','longitude','birth_year','weight','height']]
+print(ProfileInt.head())
+print()
+
+#Geoplaces2
+#Stats
+print("Number of unique restaurants in geoplaces2:", len(geoplaces2.placeID.unique()))
+print()
+#Splitting geo data into to relevant features
+geo_relevant = geoplaces2[['placeID', 'alcohol', 'smoking_area', 'other_services', 'price']]
+print(geo_relevant.alcohol.value_counts())
+print()
+print(geo_relevant.smoking_area.value_counts())
+print()
+print(geo_relevant.other_services.value_counts())
+print()
+print(geo_relevant.price.value_counts())
+print()
+#Replacing ? values with Nan
+geoplaces2 = geoplaces2.replace('?', np.nan)
+Missing_Geo = geoplaces2.isnull().sum()
+missingGeo_DF = pd.DataFrame({'columns': geoplaces2.columns, 'nullCount': Missing_Geo})
+print(missingGeo_DF)
+print()
+#print(missingGeo_DF.info())
+Missing_Geo_Plot = missingGeo_DF.plot.bar(x='columns', y='nullCount', legend=False)
+Missing_Geo_Plot.set_title('Amount of missing values in Geoplaces2 Table per Attribute')
+Missing_Geo_Plot.set_xlabel('Attributes')
+Missing_Geo_Plot.set_ylabel('Number of ? values')
+#We are going to drop fax, zip and url due to the high level of Nan's
+geoplaces2_clean = geoplaces2.drop(['fax','zip','url'],axis=1)
+#Replacing Nan values with the mode of the column
+for column in geoplaces2_clean.columns:
+    geoplaces2_clean[column].fillna(geoplaces2_clean[column].mode()[0], inplace=True)
+#Cleaning city names
+print(geoplaces2_clean.city.value_counts())
+print()
+geoplaces2_clean['city'] = geoplaces2_clean['city'].replace(['San Luis Potosi','san luis potosi','san luis potosi ', 'san luis potos', 's.l.p','slp','s.l.p.'], 'san luis potosi')
+geoplaces2_clean['city'] = geoplaces2_clean['city'].replace(['Cuernavaca', 'cuernavaca'], 'cuernavaca')
+geoplaces2_clean['city'] = geoplaces2_clean['city'].replace(['victoria','Ciudad Victoria','victoria ','Cd. Victoria','Cd Victoria'], 'ciudad victoria')
+geoplaces2_clean['city'] = geoplaces2_clean['city'].replace(['Jiutepec'], 'jiutepec')
+geoplaces2_clean['city'] = geoplaces2_clean['city'].replace(['Soledad'], 'soledad')
+print(geoplaces2_clean.city.value_counts())
+print()
+#Cleaning state names
+print(geoplaces2_clean.state.value_counts())
+print()
+geoplaces2_clean['state'] = geoplaces2_clean['state'].replace(['SLP','San Luis Potosi','san luis potosi','slp','S.L.P.','san luis potos','s.l.p.'], 'san luis potosi')
+geoplaces2_clean['state'] = geoplaces2_clean['state'].replace(['Morelos','morelos'], 'morelos')
+geoplaces2_clean['state'] = geoplaces2_clean['state'].replace(['tamaulipas','Tamaulipas'], 'tamaulipas')
+print(geoplaces2_clean.state.value_counts())
+print()
+#Cleaning country names
+print(geoplaces2_clean.country.value_counts())
+print()
+geoplaces2_clean['country'] = geoplaces2_clean['country'].replace(['Mexico','mexico'], 'mexico')
+print(geoplaces2_clean.country.value_counts())
+print()
+#Dummy Transformation (using encoder)
+GeoInt = geoplaces2_clean.select_dtypes(include=['object'])
+GeoInt = GeoInt.apply(encoder.fit_transform, axis=0)
+GeoInt[['placeID','latitude','longitude']] = geoplaces2_clean[['placeID','latitude','longitude']]
+pd.set_option('display.max_columns', None)
+print(GeoInt.head())
