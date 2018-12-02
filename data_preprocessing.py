@@ -5,6 +5,7 @@ Authors: Andrew Floyd, Daniel Fuchs
 Course: CS3001 - Dr. Fu
 Data Science Competition Project
 """
+from numpy import cos
 
 ###########################
 # FEATURE NAME MANAGEMENT #
@@ -69,10 +70,39 @@ def mass_feature_rename(table):
             table = table.drop([column], axis=1)
     return table
 
-#############################
-# FEATURE: PAYMENT MATCHING #
-#############################
+############################
+# FEATURE: PAYMENT METHODS #
+############################
+
+def feature_payment_score(table, remove=True):
+    r_fs = ['R_cash', 'R_visa', 'R_mc_ec', 'R_am_exp', 'R_debit']
+    u_fs = ['U_cash', 'U_visa', 'U_mc_ec', 'U_am_exp', 'U_debit']
+    n_fs = ['cash', 'visa', 'mc_ec', 'am_exp', 'debit']
+    for i in range(min(len(r_fs), len(u_fs))):
+        table.loc[(table[r_fs[i]] != table[u_fs[i]]), 'match_' + n_fs[i]] = -1
+        table.loc[(table[r_fs[i]] == table[u_fs[i]]) | table[r_fs[i]], 'match_' + n_fs[i]] = 0
+        table.loc[(table[r_fs[i]] == table[u_fs[i]]) & table[u_fs[i]], 'match_' + n_fs[i]] = 3
+    table['payment_score'] = table.match_cash+table.match_visa+table.match_mc_ec+table.match_am_exp+table.match_debit
+    if remove:
+        for i in range(min(len(r_fs), len(u_fs))):
+            table = table.drop(['match_' + n_fs[i]], axis=1)
+            table = table.drop([r_fs[i]], axis=1)
+            table = table.drop([u_fs[i]], axis=1)
+    return table
 
 ###########################
 # FEATURE: PAIR PROXIMITY #
 ###########################
+
+def feature_pair_proximity(table, remove=True):
+    table['D_lat'] = abs(table.R_latitude - table.U_latitude)
+    table['D_long'] = abs(table.R_longitude - table.U_longitude)
+    print(table.R_latitude)
+    table['distance'] = (((table.D_lat * (111132.954 - 559.822 * cos(2.0 * table.R_latitude) +
+                                          1.175 * cos(4.0 * table.R_latitude)))**2) +
+                         ((table.D_long * ((3.14159265359/180) * 6367449 * cos(table.R_latitude)))**2)
+                         ) ** 0.5
+    if remove:
+        for column in ['D_lat', 'D_long', 'R_latitude', 'R_longitude', 'U_latitude', 'U_longitude']:
+            table = table.drop([column], axis=1)
+    return table
