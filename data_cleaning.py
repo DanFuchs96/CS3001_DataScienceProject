@@ -110,5 +110,11 @@ def clean_user_profile():
 # RATING INFORMATION #
 ######################
 
-def clean_rating():
-    return pd.read_csv('rating_final.csv')
+def clean_rating(columns=None):
+    if columns is None:
+        return pd.read_csv('rating_final.csv')
+    else:
+        t = pd.read_csv('rating_final.csv')[columns]
+        t = pd.DataFrame(t.unique())
+        t.columns = [columns]
+        return t
