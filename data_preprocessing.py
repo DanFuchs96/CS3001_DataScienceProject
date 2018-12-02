@@ -94,7 +94,7 @@ def feature_payment_score(table, remove=True):
 # FEATURE: PAIR PROXIMITY #
 ###########################
 
-def feature_pair_proximity(table, remove=True):
+def feature_pair_proximity(table, remove=True, keep_distance=True):
     table['D_lat'] = abs(table.R_latitude - table.U_latitude)
     table['D_long'] = abs(table.R_longitude - table.U_longitude)
     print(table.R_latitude)
@@ -102,7 +102,40 @@ def feature_pair_proximity(table, remove=True):
                                           1.175 * cos(4.0 * table.R_latitude)))**2) +
                          ((table.D_long * ((3.14159265359/180) * 6367449 * cos(table.R_latitude)))**2)
                          ) ** 0.5
+    table.loc[table.distance >= 5000, 'proximity'] = 0
+    table.loc[table.distance < 5500, 'proximity'] = 1
+    table.loc[table.distance < 4000, 'proximity'] = 2
+    table.loc[table.distance < 2900, 'proximity'] = 3
+    table.loc[table.distance < 2200, 'proximity'] = 4
+    table.loc[table.distance < 1700, 'proximity'] = 5
+    table.loc[table.distance < 1200, 'proximity'] = 6
+    table.loc[table.distance < 800, 'proximity'] = 7
+    table.loc[table.distance < 500, 'proximity'] = 8
+    table.loc[table.distance < 300, 'proximity'] = 9
+    table.loc[table.distance < 150, 'proximity'] = 10
+    table.loc[table.distance < 100, 'proximity'] = 11
+    table.loc[table.distance < 70, 'proximity'] = 12
+    table.loc[table.distance < 40, 'proximity'] = 13
+    table.loc[table.distance < 25, 'proximity'] = 14
     if remove:
         for column in ['D_lat', 'D_long', 'R_latitude', 'R_longitude', 'U_latitude', 'U_longitude']:
             table = table.drop([column], axis=1)
+    if not keep_distance:
+        table = table.drop(['distance'], axis=1)
     return table
+
+#########
+# notes #################
+#########
+
+# Some good features would likely include matching smoking and alcohol consumption. There's also quietness, and budget.
+# Price, budget and whatnot would likely go with activity (jobs and etc). Formal dress is another simple matching.
+# For dealing with cuisine, we can take the currently stored psuedo-lists and count cross-matches or something.
+# Parking matters for rich people and those who have cars. Married people might care about non-quietness.
+# Franchise might not matter. Average hours open may be useful; more is probably better, but places that aren't open
+# often may be more coveted or something. No idea how we'll use personality, but it probably matters for the "service"
+# rating. Don't really know what to do with interest.
+#
+# A lot of these may not appear super helpful, but the model we use may pick up on something that we didn't expect.
+# I pruned a lot of things during the initial feature cleaning, but there's always room to add some back if we need
+# to. For the time being, we're a good bit along through the pre-processing stage.
