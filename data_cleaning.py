@@ -1,4 +1,10 @@
-# < INSERT HEADER BLOCK >
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Authors: Andrew Floyd, Daniel Fuchs
+Course: CS3001 - Dr. Fu
+Data Science Competition Project
+"""
 import pandas as pd
 
 ####################
@@ -56,7 +62,7 @@ def clean_loc_hours():
     return t
 
 def clean_loc_parking():
-    def parking_mapping(payment):  # Note; maps payment methods no user uses as "misc".
+    def parking_mapping(payment):  # Note; maps payment methods no "user" uses as "misc".
         parking_types = ['public', 'none', 'yes', 'valet parking', 'fee', 'street', 'validated parking']
         k_mapping = ['free', 'none', 'free', 'paid', 'paid', 'free', 'paid']
         return k_mapping[parking_types.index(payment)]
@@ -82,9 +88,9 @@ def clean_loc_geo():
     apply_rank(t, 'alcohol', ['No_Alcohol_Served', 'Wine-Beer', 'Full_Bar'])
     apply_rank(t, 'other_services', ['none', 'Internet', 'variety'])
     apply_rank(t, 'price', ['low', 'medium', 'high'])
-    t['formal_dress'] = t.dress_code == 'formal'
+    t['Rformal_dress'] = t.dress_code == 'formal'
     t = t.drop(['dress_code'], axis=1)
-    t['quiet'] = t.Rambience == 'quiet'
+    t['Rquiet'] = t.Rambience == 'quiet'
     t = t.drop(['Rambience'], axis=1)
     t['open_area'] = t.area == 'open'
     t = t.drop(['area'], axis=1)
@@ -101,6 +107,7 @@ def clean_loc_geo():
 
 def clean_user_cuisine():
     t = pd.read_csv("usercuisine.csv")
+    t.columns = ['userID', 'cuisine']
     t = t.groupby(['userID']).aggregate(lambda x: str(list(x)).replace('[', '').replace(']', '').replace('\'', ''))
     return t
 
@@ -150,9 +157,8 @@ def clean_user_profile():
 # RATING INFORMATION #
 ######################
 
-def clean_rating(columns=None):
-    if columns is None:
-        return pd.read_csv('rating_final.csv')
-    else:
-        t = pd.read_csv('rating_final.csv')[columns]
-        return t.unique()
+def clean_rating_table():
+    t = pd.read_csv('rating_final.csv')
+    t.columns = ['userID', 'placeID', 'rating', 'food_rating', 'service_rating']
+    t['revID'] = t.index + 1
+    return t
