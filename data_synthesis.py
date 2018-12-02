@@ -33,3 +33,25 @@ def standardize_restaurant_profile(table):
     for column in table.columns:
         table[column].fillna(table[column].mode()[0], inplace=True)
     return table
+
+###############
+# USER TABLES #
+###############
+
+def synthesize_user_profile():
+    tables = [clean_user_profile(), clean_user_cuisine(), clean_user_payment()]
+    user_profile = pd.DataFrame(generate_user_list())
+    for table in tables:
+        user_profile = pd.merge(user_profile, table, how='left', on=['userID'])
+    return standardize_user_profile(user_profile)
+
+def standardize_user_profile(table):
+    for column in table.columns:
+        table[column].fillna(table[column].mode()[0], inplace=True)
+    return table
+
+############################
+# PRIMARY TABLE GENERATION #
+############################
+
+# [ W I P ]

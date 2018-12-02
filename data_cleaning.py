@@ -77,18 +77,22 @@ def clean_loc_geo():
     t = pd.read_csv("geoplaces2.csv")
     t = t[['placeID', 'latitude', 'longitude', 'alcohol', 'smoking_area', 'dress_code', 'accessibility', 'price',
            'Rambience', 'franchise', 'area', 'other_services']]
-    apply_rank(t, 'alcohol', ['No_Alcohol_Served', 'Wine-Beer', 'Full_Bar'])
     apply_rank(t, 'smoking_area', ['none', 'only at bar', 'permitted', 'section', 'not permitted'], [0, 1, 3, 2, 0])
     apply_rank(t, 'accessibility', ['no_accessibility', 'partially', 'completely'])
+    apply_rank(t, 'alcohol', ['No_Alcohol_Served', 'Wine-Beer', 'Full_Bar'])
     apply_rank(t, 'other_services', ['none', 'Internet', 'variety'])
     apply_rank(t, 'price', ['low', 'medium', 'high'])
-    t['franchise'] = t.franchise == 't'
     t['formal_dress'] = t.dress_code == 'formal'
     t = t.drop(['dress_code'], axis=1)
     t['quiet'] = t.Rambience == 'quiet'
     t = t.drop(['Rambience'], axis=1)
     t['open_area'] = t.area == 'open'
     t = t.drop(['area'], axis=1)
+    t['Rlatitude'] = t.latitude
+    t = t.drop(['latitude'], axis=1)
+    t['Rlongitude'] = t.longitude
+    t = t.drop(['longitude'], axis=1)
+    t['franchise'] = t.franchise == 't'
     return t
 
 #######################
@@ -118,7 +122,29 @@ def clean_user_payment():
     return t
 
 def clean_user_profile():
-    return pd.read_csv("userprofile.csv")
+    t = pd.read_csv("userprofile.csv")
+    t = t[['userID', 'latitude', 'longitude', 'smoker', 'drink_level', 'dress_preference', 'ambience', 'transport',
+           'marital_status', 'birth_year', 'interest', 'personality', 'activity', 'weight', 'budget']]
+    for column in ['smoker', 'dress_preference', 'ambience', 'transport', 'marital_status', 'activity', 'budget']:
+        t[column].fillna(t[column].mode()[0], inplace=True)
+        t.loc[t[column] == '?', column] = t[column].mode()[0]
+    apply_rank(t, 'personality', ['thrifty-protector', 'hunter-ostentatious', 'hard-worker', 'conformist'])
+    apply_rank(t, 'interest', ['none', 'retro', 'variety', 'eco-friendly', 'technology'])
+    apply_rank(t, 'drink_level', ['abstemious', 'casual drinker', 'social drinker'])
+    apply_rank(t, 'transport', ['on foot', 'public', 'car owner'])
+    apply_rank(t, 'budget', ['low', 'medium', 'high'])
+    apply_rank(t, 'activity', ['student', 'unemployed', 'working-class', 'professional'], [0, 0, 1, 2])
+    apply_rank(t, 'dress_preference', ['informal', 'formal', 'no preference', 'elegant'], [0, 1, 0, 1])
+    t['formal_dress'] = t.dress_preference == 1
+    t = t.drop(['dress_preference'], axis=1)
+    t['quiet'] = t.ambience == 'solitary'
+    t = t.drop(['ambience'], axis=1)
+    t['married'] = t.marital_status == 'married'
+    t = t.drop(['marital_status'], axis=1)
+    t['age'] = 2018 - t.birth_year
+    t = t.drop(['birth_year'], axis=1)
+    t['smoker'] = t.smoker == 'true'
+    return t
 
 ######################
 # RATING INFORMATION #
