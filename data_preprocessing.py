@@ -12,7 +12,8 @@ from numpy import cos
 ###########################
 
 def mass_feature_rename(table):
-    translator = {'userID': 'userID',
+    translator = {'revID': 'revID',
+                  'userID': 'userID',
                   'placeID': 'placeID',
                   'rating': 'RATING_GENERAL',
                   'food_rating': 'RATING_FOOD',
@@ -62,13 +63,23 @@ def mass_feature_rename(table):
                   'uses_am_exp': 'U_am_exp',
                   'uses_debit': 'U_debit'}
     for column in table.columns:
+        if column not in translator:
+            continue
         translation = translator[column]
-        if translation is None or translation == column:
+        if translation == column:
             continue
         else:
             table[translation] = table[column]
             table = table.drop([column], axis=1)
     return table
+
+def extract_features(table):
+    non_features = ['revID', 'userID', 'placeID', 'RATING_GENERAL', 'RATING_SERVICE', 'RATING_FOOD']
+    features = []
+    for column in table.columns:
+        if column not in non_features:
+            features.append(column)
+    return table[features]
 
 ############################
 # FEATURE: PAYMENT METHODS #

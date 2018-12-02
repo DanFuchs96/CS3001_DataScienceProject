@@ -11,20 +11,42 @@ import pandas as pd
 #import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
-from data_synthesis import synthesize_primary_table
+from data_synthesis import synthesize_training_megatable, synthesize_testing_megatable, generate_testing_true_values
 from data_preprocessing import *
 
 
 def main():
+    # Configuration Settings
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_columns', 50)
-    pd.set_option('display.max_rows', 1000)
-    feature_table = synthesize_primary_table()
-    feature_table = mass_feature_rename(feature_table)
-    feature_table = feature_payment_score(feature_table, remove=True)
-    feature_table = feature_pair_proximity(feature_table, remove=True)
-    feature_table = feature_availability(feature_table, remove=True)
-    print(feature_table)
+    pd.set_option('display.max_rows', 10)
+
+    # Generate Primary Feature Tables
+    feature_tables = [synthesize_training_megatable(), synthesize_testing_megatable()]
+    processed_tables = []
+
+    # Apply Preprocessing
+    for feature_table in feature_tables:
+        table = mass_feature_rename(feature_table)
+        table = feature_payment_score(table, remove=True)
+        table = feature_pair_proximity(table, remove=True)
+        table = feature_availability(table, remove=True)
+        processed_tables.append(table)
+    training_data = processed_tables[0]
+    testing_data = processed_tables[1]
+
+    # Train Model
+    print(training_data)  # Wonder what model we'll use
+
+    # Apply Model
+    # use extract_features(testing_data) to get just the features; this will be the "X" input
+
+    # Evaluate Performance
+    true_values = mass_feature_rename(generate_testing_true_values())
+    # using some performance metrics, not sure what we'll use yet
+
+    # Generate Figures
+    # etc
     return
 
 

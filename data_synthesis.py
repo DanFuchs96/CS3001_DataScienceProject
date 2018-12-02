@@ -24,22 +24,35 @@ def generate_restaurant_list():
     t.columns = ['placeID']
     return t
 
+########################################
+# TRAINING / TESTING DATA SEGMENTATION #
+########################################
+
 def generate_training_data_list():
     rating_table = clean_rating_table()
     t = pd.read_csv("train.csv")
     t.columns = ['revID', 'userID', 'placeID']
     t = t[['revID']]
     t = pd.merge(t, rating_table, how='left', on=['revID'])
-    t = t.drop(['revID'], axis=1)
+    # t = t.drop(['revID'], axis=1)  # We don't need to have revID, unless we want to evaluate training's performance.
     return t
 
 def generate_testing_data_list():
+    rating_table = clean_rating_table()
+    rating_table = rating_table.drop(['rating', 'service_rating', 'food_rating'], axis=1)
+    t = pd.read_csv("test.csv")
+    t.columns = ['revID', 'userID', 'placeID']
+    t = t[['revID']]
+    t = pd.merge(t, rating_table, how='left', on=['revID'])
+    return t
+
+def generate_testing_true_values():
     rating_table = clean_rating_table()
     t = pd.read_csv("test.csv")
     t.columns = ['revID', 'userID', 'placeID']
     t = t[['revID']]
     t = pd.merge(t, rating_table, how='left', on=['revID'])
-    t = t.drop(['revID'], axis=1)
+    t = t.drop(['userID', 'placeID'], axis=1)
     return t
 
 #####################
@@ -78,8 +91,15 @@ def standardize_user_profile(table):
 # PRIMARY TABLE GENERATION #
 ############################
 
-def synthesize_primary_table():
+def synthesize_training_megatable():
     rating_table = generate_training_data_list()
+    user_profile = synthesize_user_profile()
+    rest_profile = synthesize_restaurant_profile()
+    rest_reviews = pd.merge(rating_table, rest_profile, how='left', on=['placeID'])
+    return pd.merge(rest_reviews, user_profile, how='left', on=['userID'])
+
+def synthesize_testing_megatable():
+    rating_table = generate_testing_data_list()
     user_profile = synthesize_user_profile()
     rest_profile = synthesize_restaurant_profile()
     rest_reviews = pd.merge(rating_table, rest_profile, how='left', on=['placeID'])
