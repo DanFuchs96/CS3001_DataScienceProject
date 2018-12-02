@@ -35,12 +35,11 @@ def clean_loc_accepts():
         t.loc[t.Rpayment != category, c_name] = False
     t = t.groupby('placeID').any()
     t = t.drop(['Rpayment'], axis=1)
-
     return t
 
 def clean_loc_cuisine():
     t = pd.read_csv("chefmozcuisine.csv")
-    t = t.groupby(['placeID']).aggregate(lambda x: list(x))
+    t = t.groupby(['placeID']).aggregate(lambda x: str(list(x)).replace('[', '').replace(']', '').replace('\'', ''))
     return t
 
 def clean_loc_hours():
@@ -90,7 +89,6 @@ def clean_loc_geo():
     t = t.drop(['Rambience'], axis=1)
     t['open_area'] = t.area == 'open'
     t = t.drop(['area'], axis=1)
-
     return t
 
 #######################
@@ -98,10 +96,26 @@ def clean_loc_geo():
 #######################
 
 def clean_user_cuisine():
-    return pd.read_csv("usercuisine.csv")
+    t = pd.read_csv("usercuisine.csv")
+    t = t.groupby(['userID']).aggregate(lambda x: str(list(x)).replace('[', '').replace(']', '').replace('\'', ''))
+    return t
 
 def clean_user_payment():
-    return pd.read_csv("userpayment.csv")
+    def payment_mapping(payment):
+        payment_types = ['cash', 'VISA', 'MasterCard-Eurocard', 'American_Express', 'bank_debit_cards']
+        p_mapping = ['cash', 'visa', 'mc_ec', 'am_exp', 'debit']
+        return p_mapping[payment_types.index(payment)]
+
+    t = pd.read_csv("userpayment.csv")
+    t['Upayment'] = t['Upayment'].map(payment_mapping)
+    categories = ['cash', 'visa', 'mc_ec', 'am_exp', 'debit']
+    for category in categories:
+        c_name = 'uses_' + category
+        t.loc[t.Upayment == category, c_name] = True
+        t.loc[t.Upayment != category, c_name] = False
+    t = t.groupby('userID').any()
+    t = t.drop(['Upayment'], axis=1)
+    return t
 
 def clean_user_profile():
     return pd.read_csv("userprofile.csv")
@@ -115,6 +129,4 @@ def clean_rating(columns=None):
         return pd.read_csv('rating_final.csv')
     else:
         t = pd.read_csv('rating_final.csv')[columns]
-        t = pd.DataFrame(t.unique())
-        t.columns = [columns]
-        return t
+        return t.unique()
