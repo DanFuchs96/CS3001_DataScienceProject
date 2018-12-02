@@ -16,13 +16,14 @@ from data_preprocessing import *
 
 
 def main():
-    pd.set_option('display.width', 5000)
-    pd.set_option('display.max_columns', 60)
-    pd.set_option('display.max_rows', 100)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_columns', 50)
+    pd.set_option('display.max_rows', 1000)
     feature_table = synthesize_primary_table()
     feature_table = mass_feature_rename(feature_table)
     feature_table = feature_payment_score(feature_table, remove=True)
     feature_table = feature_pair_proximity(feature_table, remove=True)
+    feature_table = feature_availability(feature_table, remove=True)
     print(feature_table)
     return
 

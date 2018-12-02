@@ -127,6 +127,23 @@ def feature_pair_proximity(table, remove=True, keep_distance=True):
         table = table.drop(['distance'], axis=1)
     return table
 
+#########################
+# FEATURE: AVAILABILITY #
+#########################
+
+def feature_availability(table, remove=True):
+    table['avg_hours'] = (table.R_weekday_hrs + table.R_sat_hrs + table.R_sun_hrs) / 3
+    table['days_open'] = 0
+    table.loc[table.R_weekday_hrs > 0, 'days_open'] += 5
+    table.loc[table.R_sat_hrs > 0, 'days_open'] += 1
+    table.loc[table.R_sun_hrs > 0, 'days_open'] += 1
+
+    # Cleaning up table
+    if remove:
+        for column in ['R_weekday_hrs', 'R_sat_hrs', 'R_sun_hrs']:
+            table = table.drop([column], axis=1)
+    return table
+
 #########
 # notes #################
 #########
@@ -135,9 +152,7 @@ def feature_pair_proximity(table, remove=True, keep_distance=True):
 # Price, budget and whatnot would likely go with activity (jobs and etc). Formal dress is another simple matching.
 # For dealing with cuisine, we can take the currently stored psuedo-lists and count cross-matches or something.
 # Parking matters for rich people and those who have cars. Married people might care about non-quietness.
-# Franchise might not matter. Average hours open may be useful; more is probably better, but places that aren't open
-# often may be more coveted or something. No idea how we'll use personality, but it probably matters for the "service"
-# rating. Don't really know what to do with interest.
+# Franchise might not matter. Dunno how to use personality / interest; probably useful for service rating though.
 #
 # A lot of these may not appear super helpful, but the model we use may pick up on something that we didn't expect.
 # I pruned a lot of things during the initial feature cleaning, but there's always room to add some back if we need
