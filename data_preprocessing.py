@@ -97,11 +97,12 @@ def feature_payment_score(table, remove=True):
 def feature_pair_proximity(table, remove=True, keep_distance=True):
     table['D_lat'] = abs(table.R_latitude - table.U_latitude)
     table['D_long'] = abs(table.R_longitude - table.U_longitude)
-    print(table.R_latitude)
     table['distance'] = (((table.D_lat * (111132.954 - 559.822 * cos(2.0 * table.R_latitude) +
                                           1.175 * cos(4.0 * table.R_latitude)))**2) +
                          ((table.D_long * ((3.14159265359/180) * 6367449 * cos(table.R_latitude)))**2)
                          ) ** 0.5
+
+    # Creating banded feature "Proximity"
     table.loc[table.distance >= 5000, 'proximity'] = 0
     table.loc[table.distance < 5500, 'proximity'] = 1
     table.loc[table.distance < 4000, 'proximity'] = 2
@@ -117,6 +118,8 @@ def feature_pair_proximity(table, remove=True, keep_distance=True):
     table.loc[table.distance < 70, 'proximity'] = 12
     table.loc[table.distance < 40, 'proximity'] = 13
     table.loc[table.distance < 25, 'proximity'] = 14
+
+    # Cleaning up table
     if remove:
         for column in ['D_lat', 'D_long', 'R_latitude', 'R_longitude', 'U_latitude', 'U_longitude']:
             table = table.drop([column], axis=1)
