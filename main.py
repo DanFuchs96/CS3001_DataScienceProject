@@ -27,7 +27,7 @@ def main():
     analysis()
 
     # Apply Preprocessing
-    '''for feature_table in feature_tables:
+    for feature_table in feature_tables:
         table = mass_feature_rename(feature_table)
         table = feature_payment_score(table, remove=True)
         table = feature_pair_proximity(table, remove=True)
@@ -43,7 +43,7 @@ def main():
     # use extract_features(testing_data) to get just the features; this will be the "X" input
 
     # Evaluate Performance
-    true_values = mass_feature_rename(generate_testing_true_values())'''
+    true_values = mass_feature_rename(generate_testing_true_values())
     # using some performance metrics, not sure what we'll use yet
 
     # Generate Figures
