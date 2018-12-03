@@ -15,9 +15,9 @@ def mass_feature_rename(table):
     translator = {'revID': 'revID',
                   'userID': 'userID',
                   'placeID': 'placeID',
-                  'rating': 'RATING_GENERAL',
-                  'food_rating': 'RATING_FOOD',
-                  'service_rating': 'RATING_SERVICE',
+                  'rating': 'RATING',
+                  'food_rating': 'food_rating',
+                  'service_rating': 'service_rating',
                   'alcohol': 'R_alcohol',
                   'smoking_area': 'R_smoking',
                   'accessibility': 'R_accessibility',
@@ -74,7 +74,7 @@ def mass_feature_rename(table):
     return table
 
 def extract_features(table):
-    non_features = ['revID', 'userID', 'placeID', 'RATING_GENERAL', 'RATING_SERVICE', 'RATING_FOOD']
+    non_features = ['revID', 'userID', 'placeID', 'RATING']
     features = []
     for column in table.columns:
         if column not in non_features:
@@ -155,6 +155,49 @@ def feature_availability(table, remove=True):
             table = table.drop([column], axis=1)
     return table
 
+##########################
+# FEATURE: COMPATIBILITY #
+##########################
+
+def feature_alcohol(table, remove=True):
+    table['match_alcohol'] = table.R_alcohol == table.U_alcohol
+    table.loc[table.U_alcohol > 0, 'alcohol_score'] = table.R_alcohol * table.U_alcohol
+    table.loc[table.U_alcohol == 0, 'alcohol_score'] = (2 - table.R_alcohol) + 0.5
+    if remove:
+        for column in ['R_alcohol', 'U_alcohol']:
+            table = table.drop([column], axis=1)
+    return table
+
+def feature_noise(table, remove=True):
+    table['match_quiet'] = table.R_quiet == table.U_quiet
+    if remove:
+        for column in ['R_quiet', 'U_quiet']:
+            table = table.drop([column], axis=1)
+    return table
+
+def feature_smoking(table, remove=True):
+    table.loc[table.U_smoking, 'smoking_score'] = table.R_smoking
+    table.loc[table.U_smoking == False, 'smoking_score'] = 3 - table.R_smoking
+    table['match_smoke'] = table.U_smoking == (table.R_smoking > 0)
+    if remove:
+        for column in ['R_smoking', 'U_smoking']:
+            table = table.drop([column], axis=1)
+    return table
+
+def feature_dress(table, remove=True):
+    table['match_dress'] = table.R_formal_dress == table.U_formal_dress
+    if remove:
+        for column in ['R_formal_dress', 'U_formal_dress']:
+            table = table.drop([column], axis=1)
+    return table
+
+def feature_price(table, remove=True):
+    table['price_score'] = 2 - abs(table.U_budget - table.R_price)
+    if remove:
+        for column in ['R_price', 'U_budget']:
+            table = table.drop([column], axis=1)
+    return table
+
 #########
 # notes #################
 #########
@@ -168,3 +211,5 @@ def feature_availability(table, remove=True):
 # A lot of these may not appear super helpful, but the model we use may pick up on something that we didn't expect.
 # I pruned a lot of things during the initial feature cleaning, but there's always room to add some back if we need
 # to. For the time being, we're a good bit along through the pre-processing stage.
+#
+# You should take advantage of computing average ratings on the training data.

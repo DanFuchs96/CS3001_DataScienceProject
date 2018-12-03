@@ -19,18 +19,23 @@ def main():
     # Configuration Settings
     pd.set_option('display.width', 1000)
     pd.set_option('display.max_columns', 50)
-    pd.set_option('display.max_rows', 10)
+    pd.set_option('display.max_rows', 200)
 
     # Generate Primary Feature Tables
     feature_tables = [synthesize_training_megatable(), synthesize_testing_megatable()]
-    processed_tables = []
 
     # Apply Preprocessing
+    processed_tables = []
     for feature_table in feature_tables:
         table = mass_feature_rename(feature_table)
         table = feature_payment_score(table, remove=True)
         table = feature_pair_proximity(table, remove=True)
         table = feature_availability(table, remove=True)
+        table = feature_smoking(table, remove=True)
+        table = feature_alcohol(table, remove=True)
+        table = feature_noise(table, remove=True)
+        table = feature_dress(table, remove=True)
+        table = feature_price(table, remove=True)
         processed_tables.append(table)
     training_data = processed_tables[0]
     testing_data = processed_tables[1]

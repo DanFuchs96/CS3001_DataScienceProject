@@ -39,7 +39,7 @@ def generate_training_data_list():
 
 def generate_testing_data_list():
     rating_table = clean_rating_table()
-    rating_table = rating_table.drop(['rating', 'service_rating', 'food_rating'], axis=1)
+    rating_table = rating_table.drop(['rating'], axis=1)
     t = pd.read_csv("test.csv")
     t.columns = ['revID', 'userID', 'placeID']
     t = t[['revID']]
@@ -52,7 +52,7 @@ def generate_testing_true_values():
     t.columns = ['revID', 'userID', 'placeID']
     t = t[['revID']]
     t = pd.merge(t, rating_table, how='left', on=['revID'])
-    t = t.drop(['userID', 'placeID'], axis=1)
+    t = t.drop(['userID', 'placeID', 'service_rating', 'food_rating'], axis=1)
     return t
 
 #####################
