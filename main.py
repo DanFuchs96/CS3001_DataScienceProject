@@ -23,6 +23,7 @@ def main():
 
     # Generate Primary Feature Tables
     feature_tables = [synthesize_training_megatable(), synthesize_testing_megatable()]
+    analysis()
 
     # Apply Preprocessing
     processed_tables = []
