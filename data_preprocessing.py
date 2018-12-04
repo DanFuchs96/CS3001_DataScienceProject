@@ -6,6 +6,7 @@ Course: CS3001 - Dr. Fu
 Data Science Competition Project
 """
 from numpy import cos
+import numpy as np
 
 ###########################
 # FEATURE NAME MANAGEMENT #
@@ -81,9 +82,27 @@ def extract_features(table):
             features.append(column)
     return table[features]
 
-############################
-# FEATURE: PAYMENT METHODS #
-############################
+def quantify_features(table):
+    boolean_features = []
+    features = table.columns
+    for x in table.dtypes:
+        boolean_features.append(x == 'bool')
+    for i in range(len(features)):
+        if boolean_features[i]:
+            table.loc[table[features[i]] == True, features[i]] = 1
+            table.loc[table[features[i]] == False, features[i]] = 0
+    return table
+
+def finalize_feature_selections(table):
+    noncritical_features = ['U_married', 'match_smoke', 'match_alcohol', 'U_weight', 'U_age', 'R_open_area',
+                            'R_accessibility', 'R_check', 'U_activity', 'R_services']
+    for column in noncritical_features:
+        table = table.drop([column], axis=1)
+    return table
+
+#############################
+# FEATURE: PAYMENT MATCHING #
+#############################
 
 def feature_payment_score(table, remove=True):
     r_fs = ['R_cash', 'R_visa', 'R_mc_ec', 'R_am_exp', 'R_debit']
@@ -195,6 +214,38 @@ def feature_price(table, remove=True):
     table['price_score'] = 2 - abs(table.U_budget - table.R_price)
     if remove:
         for column in ['R_price', 'U_budget']:
+            table = table.drop([column], axis=1)
+    return table
+
+def feature_car_parking(table, remove=True):
+    table['parking_score'] = 0
+    table.loc[table.R_park_free & (table.U_transport < 2), 'parking_score'] = 1
+    table.loc[table.R_park_none & (table.U_transport < 2), 'parking_score'] = 2
+    table.loc[table.R_park_free & (table.U_transport == 2), 'parking_score'] = 2
+    table.loc[table.R_park_paid & (table.U_transport == 2), 'parking_score'] = 3
+    if remove:
+        for column in ['R_park_free', 'R_park_paid', 'R_park_none', 'U_transport']:
+            table = table.drop([column], axis=1)
+    return table
+
+############################
+# FEATURE: CUISINE OVERLAP #
+############################
+
+def feature_cuisines(table, remove=True):
+    values = []
+    for i in range(len(table)):
+        x = (table.iloc[i]['R_cuisine']).replace(' ', '').split(',')
+        y = (table.iloc[i]['U_cuisine']).replace(' ', '').split(',')
+        score = 0
+        for dish in x:
+            if dish in y:
+                score += 3
+        score += len(y)/10
+        values.append(score)
+    table['cuisine_score'] = values
+    if remove:
+        for column in ['R_cuisine', 'U_cuisine']:
             table = table.drop([column], axis=1)
     return table
 

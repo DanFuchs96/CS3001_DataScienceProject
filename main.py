@@ -23,20 +23,24 @@ def main():
 
     # Generate Primary Feature Tables
     feature_tables = [synthesize_training_megatable(), synthesize_testing_megatable()]
-    analysis()
+    # analysis()
 
     # Apply Preprocessing
     processed_tables = []
     for feature_table in feature_tables:
         table = mass_feature_rename(feature_table)
         table = feature_payment_score(table, remove=True)
-        table = feature_pair_proximity(table, remove=True)
+        table = feature_pair_proximity(table, remove=True, keep_distance=False)
         table = feature_availability(table, remove=True)
         table = feature_smoking(table, remove=True)
         table = feature_alcohol(table, remove=True)
         table = feature_noise(table, remove=True)
         table = feature_dress(table, remove=True)
         table = feature_price(table, remove=True)
+        table = feature_car_parking(table, remove=True)
+        table = feature_cuisines(table, remove=True)
+        table = quantify_features(table)
+        table = finalize_feature_selections(table)
         processed_tables.append(table)
     training_data = processed_tables[0]
     testing_data = processed_tables[1]
