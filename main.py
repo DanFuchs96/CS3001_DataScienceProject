@@ -8,7 +8,7 @@ Data Science Competition Project
 import sys
 import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
@@ -58,6 +58,8 @@ def main():
     # Evaluate Performance
     true_values = mass_feature_rename(generate_testing_true_values())
     print("Accuracy score:", accuracy_score(true_values['RATING'], predictions))
+    
+    create_scatter(predictions, true_values)
 
     # Generate Figures
     # etc
@@ -304,6 +306,16 @@ def analysis():
     GeoInt[['placeID', 'latitude', 'longitude']] = geoplaces2_clean[['placeID', 'latitude', 'longitude']]
     pd.set_option('display.max_columns', None)
     print(GeoInt.head())
+    
+def create_scatter(predictions, true_values):
+    df_test = pd.DataFrame(predictions, columns=['prediction'])
+    plt.scatter(df_test.index, df_test.prediction, color='r', s=2)
+    plt.scatter(true_values.index, true_values.RATING, color='b', s=2)
+    plt.legend(loc=1)
+    plt.title("Logistic Regression Predicted Ratings v. Actual Ratings Scatter Plot")
+    plt.xlabel('Index Value')
+    plt.ylabel('Rating Value')
+    plt.savefig('logistic_regression_scatter.png', dpi=750)
 
 
 # # # # # # # # # # # #
