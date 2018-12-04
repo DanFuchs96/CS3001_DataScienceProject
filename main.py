@@ -74,9 +74,10 @@ def main():
     print("RMSE (w/ LogisticRegression):", rmse)
     
     # Generate Figures
-    create_scatter(predictions, true_values, "LassoRegression")
+    #create_scatter(predictions, true_values, "LassoRegression")
     #create_scatter(predictions, true_values, "KNN")
     
+    create_results_bar()
     # etc
     return
 
@@ -334,6 +335,24 @@ def create_scatter(predictions, true_values, model):
     plt.ylabel('Rating Value')
     savefig = model + '_scatter.png'
     plt.savefig(savefig, dpi=750)
+    
+def create_results_bar():
+    ind = np.arange(2)
+    results_acc = [0.570200573, 0.773638968]
+    results_mse = [0.57593123, 0.23495702]
+    results_rmse = [0.75890133225, 0.484723653288]
+    width = 0.15
+    fig, ax = plt.subplots()
+    results_bar1 = ax.bar(ind-width, results_acc, width, color='r')
+    results_bar2 = ax.bar(ind, results_mse, width, color='b')
+    results_bar3 = ax.bar(ind+ width, results_rmse, width, color='g')
+    ax.set_xticks(ind)
+    ax.set_xticklabels(('KNN', 'LogisticRegression'))
+    ax.set_xlabel('Model Type')
+    ax.set_ylabel('Value')
+    ax.legend((results_bar1[0], results_bar2[0], results_bar3[0]), ('Accuracy', 'MSE', 'RMSE'))
+    ax.set_title('Accuracy, MSE and RMSE Results by Model')
+    fig.savefig('results_bar.png', dpi=750)
 
 
 # # # # # # # # # # # #
