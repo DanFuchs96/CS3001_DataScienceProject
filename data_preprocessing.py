@@ -82,15 +82,19 @@ def extract_features(table):
             features.append(column)
     return table[features]
 
-def quantify_features(table):
+def quantify_features(table, remove_bool=True, remove_float=False):
     boolean_features = []
+    continuous_features = []
     features = table.columns
     for x in table.dtypes:
         boolean_features.append(x == 'bool')
+        continuous_features.append(x == 'float64')
     for i in range(len(features)):
-        if boolean_features[i]:
+        if remove_bool and boolean_features[i]:
             table.loc[table[features[i]] == True, features[i]] = 1
             table.loc[table[features[i]] == False, features[i]] = 0
+        if remove_float and continuous_features[i]:
+            table[features[i]] = table[features[i]].astype(int)
     return table
 
 def finalize_feature_selections(table):

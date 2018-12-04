@@ -10,6 +10,9 @@ import numpy as np
 import pandas as pd
 #import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import Lasso, LogisticRegression
 
 from data_synthesis import synthesize_training_megatable, synthesize_testing_megatable, generate_testing_true_values
 from data_preprocessing import *
@@ -46,14 +49,15 @@ def main():
     testing_data = processed_tables[1]
 
     # Train Model
-    print(training_data)  # Wonder what model we'll use
+    model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
+    model.fit(extract_features(training_data), training_data['RATING'])
 
     # Apply Model
-    # use extract_features(testing_data) to get just the features; this will be the "X" input
+    predictions = model.predict(extract_features(testing_data))
 
     # Evaluate Performance
     true_values = mass_feature_rename(generate_testing_true_values())
-    # using some performance metrics, not sure what we'll use yet
+    print("Accuracy score:", accuracy_score(true_values['RATING'], predictions))
 
     # Generate Figures
     # etc
