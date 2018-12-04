@@ -10,9 +10,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
+from math import sqrt
 
 from data_synthesis import synthesize_training_megatable, synthesize_testing_megatable, generate_testing_true_values
 from data_preprocessing import *
@@ -52,19 +53,28 @@ def main():
     model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
     model.fit(extract_features(training_data), training_data['RATING'])
     predictions = model.predict(extract_features(testing_data))
-    
-    
+        
     #KNN Model (Uncomment to run)
     #model = KNeighborsClassifier()
     #model.fit(extract_features(training_data), training_data['RATING'])
     #predictions = model.predict(extract_features(testing_data))
     
+    #Lasso Model (Uncomment to run)
+    #model = Lasso()
+    #model.fit(extract_features(training_data), training_data['RATING'])
+    #predictions = model.predict(extract_features(testing_data))
+    
     # Evaluate Performance
     true_values = mass_feature_rename(generate_testing_true_values())
+    print()
     print("Accuracy score (w/ LogisticRegression):", accuracy_score(true_values['RATING'], predictions))
+    #print("Accuracy score (w/ LassoRegression):", model.score(true_values['RATING'], predictions))
+    print("MSE (w/ LogisticRegression):", mean_squared_error(true_values['RATING'], predictions))
+    rmse = sqrt(mean_squared_error(true_values['RATING'], predictions))
+    print("RMSE (w/ LogisticRegression):", rmse)
     
     # Generate Figures
-    create_scatter(predictions, true_values, "LogisticRegression")
+    create_scatter(predictions, true_values, "LassoRegression")
     #create_scatter(predictions, true_values, "KNN")
     
     # etc
