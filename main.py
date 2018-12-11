@@ -8,11 +8,12 @@ Data Science Competition Project
 import sys
 import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import Lasso, LogisticRegression
+from math import sqrt
 
 from data_synthesis import synthesize_training_megatable, synthesize_testing_megatable, generate_testing_true_values
 from data_preprocessing import *
@@ -48,18 +49,35 @@ def main():
     training_data = processed_tables[0]
     testing_data = processed_tables[1]
 
-    # Train Model
+    #Logistic Regression Model
     model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
     model.fit(extract_features(training_data), training_data['RATING'])
-
-    # Apply Model
     predictions = model.predict(extract_features(testing_data))
-
+        
+    #KNN Model (Uncomment to run)
+    #model = KNeighborsClassifier()
+    #model.fit(extract_features(training_data), training_data['RATING'])
+    #predictions = model.predict(extract_features(testing_data))
+    
+    #Lasso Model (Uncomment to run)
+    #model = Lasso()
+    #model.fit(extract_features(training_data), training_data['RATING'])
+    #predictions = model.predict(extract_features(testing_data))
+    
     # Evaluate Performance
     true_values = mass_feature_rename(generate_testing_true_values())
-    print("Accuracy score:", accuracy_score(true_values['RATING'], predictions))
-
+    print()
+    print("Accuracy score (w/ LogisticRegression):", accuracy_score(true_values['RATING'], predictions))
+    #print("Accuracy score (w/ LassoRegression):", model.score(true_values['RATING'], predictions))
+    print("MSE (w/ LogisticRegression):", mean_squared_error(true_values['RATING'], predictions))
+    rmse = sqrt(mean_squared_error(true_values['RATING'], predictions))
+    print("RMSE (w/ LogisticRegression):", rmse)
+    
     # Generate Figures
+    #create_scatter(predictions, true_values, "LassoRegression")
+    #create_scatter(predictions, true_values, "KNN")
+    
+    create_results_bar()
     # etc
     return
 
@@ -304,6 +322,37 @@ def analysis():
     GeoInt[['placeID', 'latitude', 'longitude']] = geoplaces2_clean[['placeID', 'latitude', 'longitude']]
     pd.set_option('display.max_columns', None)
     print(GeoInt.head())
+    
+def create_scatter(predictions, true_values, model):
+    df_test = pd.DataFrame(predictions, columns=['prediction'])
+    plt.scatter(df_test.index, df_test.prediction, color='r', s=2)
+    plt.scatter(true_values.index, true_values.RATING, color='b', s=2)
+    plt.legend(loc=1)
+    title = " Predicted Ratings v. Actual Ratings Scatter Plot"
+    str_title = model + title
+    plt.title(str_title)
+    plt.xlabel('Index Value')
+    plt.ylabel('Rating Value')
+    savefig = model + '_scatter.png'
+    plt.savefig(savefig, dpi=750)
+    
+def create_results_bar():
+    ind = np.arange(2)
+    results_acc = [0.570200573, 0.773638968]
+    results_mse = [0.57593123, 0.23495702]
+    results_rmse = [0.75890133225, 0.484723653288]
+    width = 0.15
+    fig, ax = plt.subplots()
+    results_bar1 = ax.bar(ind-width, results_acc, width, color='r')
+    results_bar2 = ax.bar(ind, results_mse, width, color='b')
+    results_bar3 = ax.bar(ind+ width, results_rmse, width, color='g')
+    ax.set_xticks(ind)
+    ax.set_xticklabels(('KNN', 'LogisticRegression'))
+    ax.set_xlabel('Model Type')
+    ax.set_ylabel('Value')
+    ax.legend((results_bar1[0], results_bar2[0], results_bar3[0]), ('Accuracy', 'MSE', 'RMSE'))
+    ax.set_title('Accuracy, MSE and RMSE Results by Model')
+    fig.savefig('results_bar.png', dpi=750)
 
 
 # # # # # # # # # # # #
