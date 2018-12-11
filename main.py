@@ -10,9 +10,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
+from sklearn.cluster import KMeans
+from sklearn.naive_bayes import GaussianNB
 from math import sqrt
 
 from data_synthesis import synthesize_training_megatable, synthesize_testing_megatable, generate_testing_true_values
@@ -36,7 +38,7 @@ def main():
         table = feature_payment_score(table, remove=True)
         table = feature_pair_proximity(table, remove=True, keep_distance=False)
         table = feature_availability(table, remove=True)
-        table = feature_smoking(table, remove=True)
+        table = feature_smoking(table)
         table = feature_alcohol(table, remove=True)
         table = feature_noise(table, remove=True)
         table = feature_dress(table, remove=True)
@@ -49,37 +51,33 @@ def main():
     training_data = processed_tables[0]
     testing_data = processed_tables[1]
 
-    #Logistic Regression Model
-    model = LogisticRegression(solver='newton-cg', multi_class='multinomial')
+    # Create Model
+    m_name = 'logistic regression'.upper()
+    if m_name == 'GAUSS':
+        model = GaussianNB()
+    elif m_name == 'LASSO':
+        model = Lasso(alpha=0.1)
+    elif m_name == 'KNN':
+        model = KNeighborsClassifier(n_neighbors=7, algorithm='auto', weights='distance')
+    else:
+        model = LogisticRegression(solver='newton-cg', multi_class='multinomial', C=1.5)
+
+    # Train / Apply Model
     model.fit(extract_features(training_data), training_data['RATING'])
-    predictions = model.predict(extract_features(testing_data))
-        
-    #KNN Model (Uncomment to run)
-    #model = KNeighborsClassifier()
-    #model.fit(extract_features(training_data), training_data['RATING'])
-    #predictions = model.predict(extract_features(testing_data))
-    
-    #Lasso Model (Uncomment to run)
-    #model = Lasso()
-    #model.fit(extract_features(training_data), training_data['RATING'])
-    #predictions = model.predict(extract_features(testing_data))
-    
+    predictions = np.rint(model.predict(extract_features(testing_data)))
+
     # Evaluate Performance
-    true_values = mass_feature_rename(generate_testing_true_values())
-    print()
-    print("Accuracy score (w/ LogisticRegression):", accuracy_score(true_values['RATING'], predictions))
-    #print("Accuracy score (w/ LassoRegression):", model.score(true_values['RATING'], predictions))
-    print("MSE (w/ LogisticRegression):", mean_squared_error(true_values['RATING'], predictions))
-    rmse = sqrt(mean_squared_error(true_values['RATING'], predictions))
-    print("RMSE (w/ LogisticRegression):", rmse)
-    
+    true_values = mass_feature_rename(generate_testing_true_values())['RATING']
+    print("Execution complete. The performance of %s is as follows:" % m_name)
+    print("Accuracy:", accuracy_score(true_values, predictions))
+    print("RMSE:", sqrt(mean_squared_error(true_values, predictions)))
+    print("MAE:", mean_absolute_error(true_values, predictions))
+
     # Generate Figures
-    #create_scatter(predictions, true_values, "LassoRegression")
-    #create_scatter(predictions, true_values, "KNN")
-    
-    create_results_bar()
-    # etc
-    return
+    # create_scatter(predictions, true_values, "LassoRegression")
+    # create_scatter(predictions, true_values, "KNN")
+    # create_results_bar()
+    return accuracy_score(true_values, predictions)
 
 
 def analysis():

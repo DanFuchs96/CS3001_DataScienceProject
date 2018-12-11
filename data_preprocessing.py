@@ -6,6 +6,7 @@ Course: CS3001 - Dr. Fu
 Data Science Competition Project
 """
 from numpy import cos
+import random as rn
 import numpy as np
 
 ###########################
@@ -98,10 +99,15 @@ def quantify_features(table, remove_bool=True, remove_float=False):
     return table
 
 def finalize_feature_selections(table):
-    noncritical_features = ['U_married', 'match_smoke', 'match_alcohol', 'U_weight', 'U_age', 'R_open_area',
-                            'R_accessibility', 'R_check', 'U_activity', 'R_services']
-    for column in noncritical_features:
-        table = table.drop([column], axis=1)
+    # Important: ['RATING', 'revID', 'food_rating', 'service_rating', 'R_open_area', 'R_accessibility', 'match_quiet']
+    critical_features = ['RATING', 'revID', 'food_rating', 'service_rating', 'R_accessibility', 'R_franchise',
+                         'R_services', 'R_open_area', 'U_activity', 'U_married', 'U_age', 'proximity', 'days_open',
+                         'smoking_score', 'U_smoker', 'alcohol_score', 'match_quiet', 'match_dress', 'U_personality',
+                         'cuisine_score']
+
+    for column in table.columns:
+        if column not in critical_features:
+            table = table.drop([column], axis=1)
     return table
 
 #############################
@@ -201,7 +207,7 @@ def feature_noise(table, remove=True):
 def feature_smoking(table, remove=True):
     table.loc[table.U_smoking, 'smoking_score'] = table.R_smoking
     table.loc[table.U_smoking == False, 'smoking_score'] = 3 - table.R_smoking
-    table['match_smoke'] = table.U_smoking == (table.R_smoking > 0)
+    table['U_smoker'] = table.U_smoking
     if remove:
         for column in ['R_smoking', 'U_smoking']:
             table = table.drop([column], axis=1)
@@ -245,26 +251,10 @@ def feature_cuisines(table, remove=True):
         for dish in x:
             if dish in y:
                 score += 3
-        score += len(y)/10
+        score += len(y)/5
         values.append(score)
     table['cuisine_score'] = values
     if remove:
         for column in ['R_cuisine', 'U_cuisine']:
             table = table.drop([column], axis=1)
     return table
-
-#########
-# notes #################
-#########
-
-# Some good features would likely include matching smoking and alcohol consumption. There's also quietness, and budget.
-# Price, budget and whatnot would likely go with activity (jobs and etc). Formal dress is another simple matching.
-# For dealing with cuisine, we can take the currently stored psuedo-lists and count cross-matches or something.
-# Parking matters for rich people and those who have cars. Married people might care about non-quietness.
-# Franchise might not matter. Dunno how to use personality / interest; probably useful for service rating though.
-#
-# A lot of these may not appear super helpful, but the model we use may pick up on something that we didn't expect.
-# I pruned a lot of things during the initial feature cleaning, but there's always room to add some back if we need
-# to. For the time being, we're a good bit along through the pre-processing stage.
-#
-# You should take advantage of computing average ratings on the training data.
