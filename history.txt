@@ -22,3 +22,7 @@ parking_score -  Score based on how well location matches user's transport.
 cuisine_score -  Score based on overlap in user preferences with available food.
 
 [Version 2]
+['RATING', 'revID', 'food_rating', 'service_rating', 'R_accessibility', 'R_franchise',
+ 'R_services', 'R_open_area', 'U_activity', 'U_married', 'U_age', 'proximity', 'days_open',
+ 'smoking_score', 'U_smoker', 'alcohol_score', 'match_quiet', 'match_dress', 'U_personality',
+ 'cuisine_score']
