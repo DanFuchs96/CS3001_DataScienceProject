@@ -14,6 +14,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_er
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression, Ridge
 from sklearn.cluster import KMeans
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from math import sqrt
 
@@ -56,6 +57,8 @@ def main():
     m_name = 'logistic regression'.upper()
     if m_name == 'GAUSS':
         model = GaussianNB()
+    elif m_name == 'DECISION TREE':
+        model = DecisionTreeClassifier()
     elif m_name == 'LASSO':
         model = Lasso(alpha=0.01)
     elif m_name == 'RIDGE':
