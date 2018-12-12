@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression
+from sklearn.linear_model import Lasso, LogisticRegression, LinearRegression, Ridge
 from sklearn.cluster import KMeans
 from sklearn.naive_bayes import GaussianNB
 from math import sqrt
@@ -38,13 +38,14 @@ def main():
         table = feature_payment_score(table, remove=True)
         table = feature_pair_proximity(table, remove=True, keep_distance=False)
         table = feature_availability(table, remove=True)
-        table = feature_smoking(table)
+        table = feature_smoking(table, remove=True)
         table = feature_alcohol(table, remove=True)
         table = feature_noise(table, remove=True)
         table = feature_dress(table, remove=True)
         table = feature_price(table, remove=True)
         table = feature_car_parking(table, remove=True)
         table = feature_cuisines(table, remove=True)
+        table = feature_subrating(table, remove=False)
         table = quantify_features(table)
         table = finalize_feature_selections(table)
         processed_tables.append(table)
@@ -56,7 +57,9 @@ def main():
     if m_name == 'GAUSS':
         model = GaussianNB()
     elif m_name == 'LASSO':
-        model = Lasso(alpha=0.1)
+        model = Lasso(alpha=0.01)
+    elif m_name == 'RIDGE':
+        model = Ridge(alpha=0.01)
     elif m_name == 'KNN':
         model = KNeighborsClassifier(n_neighbors=7, algorithm='auto', weights='distance')
     else:
@@ -72,6 +75,17 @@ def main():
     print("Accuracy:", accuracy_score(true_values, predictions))
     print("RMSE:", sqrt(mean_squared_error(true_values, predictions)))
     print("MAE:", mean_absolute_error(true_values, predictions))
+
+    # Show Results
+    show_results = False
+    if show_results:
+        compare = pd.DataFrame()
+        compare['exact'] = model.predict(extract_features(testing_data))
+        compare['true'] = true_values
+        compare['pred'] = predictions
+        compare['diff'] = compare.true - compare.pred
+        compare = compare.join(testing_data)
+        print(compare)
 
     # Generate Figures
     # create_scatter(predictions, true_values, "LassoRegression")

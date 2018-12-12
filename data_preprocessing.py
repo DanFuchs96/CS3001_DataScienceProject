@@ -258,3 +258,14 @@ def feature_cuisines(table, remove=True):
         for column in ['R_cuisine', 'U_cuisine']:
             table = table.drop([column], axis=1)
     return table
+
+##############################
+# FEATURE: AVERAGE SUBRATING #
+##############################
+
+def feature_subrating(table, remove=True):
+    table['subrating'] = (table.food_rating + table.service_rating + 1) // 2
+    if remove:
+        for column in ['food_rating', 'service_rating']:
+            table = table.drop([column], axis=1)
+    return table
