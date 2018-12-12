@@ -54,7 +54,7 @@ def main():
     testing_data = processed_tables[1]
 
     # Create Model
-    m_name = 'logistic regression'.upper()
+    m_name = 'logistic Regression'.upper()
     if m_name == 'GAUSS':
         model = GaussianNB()
     elif m_name == 'DECISION TREE':
@@ -352,17 +352,17 @@ def create_scatter(predictions, true_values, model):
     plt.savefig(savefig, dpi=750)
     
 def create_results_bar():
-    ind = np.arange(2)
-    results_acc = [0.570200573, 0.773638968]
-    results_mse = [0.57593123, 0.23495702]
-    results_rmse = [0.75890133225, 0.484723653288]
+    ind = np.arange(6)
+    results_acc = [0.650429799, 0.80515759, 0.66475644, 0.69340974, 0.773638968, 0.7707736389]
+    results_rmse = [0.6855027644, 0.4697130746, 0.6149987769, 0.63336098, 0.48472365, 0.487670329]
+    results_mse = [0.389684813, 0.203438295, 0.34957020057, 0.3381088825, 0.229226361, 0.2320916905]
     width = 0.15
     fig, ax = plt.subplots()
     results_bar1 = ax.bar(ind-width, results_acc, width, color='r')
     results_bar2 = ax.bar(ind, results_mse, width, color='b')
     results_bar3 = ax.bar(ind+ width, results_rmse, width, color='g')
     ax.set_xticks(ind)
-    ax.set_xticklabels(('KNN', 'LogisticRegression'))
+    ax.set_xticklabels(('KNN', 'LogReg', 'GaussNB', 'DecTree', 'LassoReg', 'RidgeReg'))
     ax.set_xlabel('Model Type')
     ax.set_ylabel('Value')
     ax.legend((results_bar1[0], results_bar2[0], results_bar3[0]), ('Accuracy', 'MSE', 'RMSE'))
